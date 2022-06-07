@@ -7,7 +7,6 @@ import time
 
 
 ## Things that i want.
-## Interactive key rebinding
 ## rebind from files
 ## uart socket based gui override to provide better controll
 
@@ -22,6 +21,13 @@ class jogBoard:
         self.port=port
         self.serial=serial.Serial(port,timeout=1)
         self.functions={}
+        self.functions["Knob"]={}
+        self.functions["Button"]={}
+        self.functions["Forward"]={}
+        self.functions["Reverse"]={}
+        self.functions["Backward"]={}
+        self.functions["Play"]={}
+        self.functions["Stop"]={}
         self.readSettings()
     def readSettings(self):
         print("reading input")
@@ -36,107 +42,92 @@ class jogBoard:
             vals=line.split(": ")
             if "END OF SETTINGS" in line:
                 keepReading=False
-            elif len(vals)==2:
-                self.functions[vals[0]]=self.intToKey[int(vals[1])]
-                print(vals[0]+": "+self.functions[vals[0]])
-            elif len(vals)==3:
-                bits=(8-len(vals[2]))*'0'+vals[2]
-                self.functions[vals[0]]=[self.intToKey[int(vals[1])],bits]
-                print(vals[0]+": "+self.intToKey[int(vals[1])]+" : "+self.functions[vals[0]][1])
-    def saveState(self,function):
-        function=function
-        pin=function[-1]
-        self.serial.write(("B {} {}\n\r".format(pin,int(self.functions[function][1],2))).encode())
-    def setAltState(self,function,state):
-        bits = self.functions[function][1]
+            elif len(vals)>1:
+                if "Forward" in vals[0]:
+                    self.functions["Forward"]["key"]=self.intToKey[int(vals[1])]
+                elif "Backward" in vals[0]:
+                    self.functions["Backward"]["key"]=self.intToKey[int(vals[1])]
+                elif "Play" in vals[0]:
+                    self.functions["Play"]["key"]=self.intToKey[int(vals[1])]
+                elif "Reverse" in vals[0]:
+                    self.functions["Reverse"]["key"]=self.intToKey[int(vals[1])]
+                elif "Stop" in vals[0]:
+                    self.functions["Stop"]["key"]=self.intToKey[int(vals[1])]
+                elif "Button" in vals[0]:
+                    number=int(vals[0].split("-")[1])
+                    self.functions["Button"][number]={}
+                    self.functions["Button"][number]["Key"]=self.intToKey[int(vals[1])]
+                    self.functions["Button"][number]["Function"]=vals[2]
+                elif "Knob" in vals[0]:
+                    number=int(vals[0].split("-")[1])
+                    self.functions["Knob"][number]={}
+                    self.functions["Knob"][number]["Key1"]=self.intToKey[int(vals[1])]
+                    self.functions["Knob"][number]["Key2"]=self.intToKey[int(vals[2])]
+                    
+                
+    def saveState(self,channel,style="Button"):
+        
+        self.serial.write(("B {} {}\n\r".format(channel,int(self.functions[style][channel]["Function"],2))).encode())
+    def setAltState(self,channel,state):
+        bits = self.functions[style][channel]["Function"]
         if state:
             bits[0]="1"
         else:
             bits[0]="0"
-        self.functions[function][1]=bits
-        self.saveState(function)
-    def setCtrlState(self,function,state):
-        bits = self.functions[function][1]
+        self.functions[style][channel]["Function"]=bits
+        self.saveState(channel)
+    def setCtrlState(self,function,state,style="Button"):
+        bits = self.functions[style][channel]["Function"]
         if state:
             bits[1]="1"
         else:
             bits[1]="0"
-        self.functions[function][1]=bits
-        self.saveState(function)
-    def setShiftState(self,function,state):
-        bits = self.functions[function][1]
+        self.functions[style][channel]["Function"]=bits
+        self.saveState(channel)
+    def setShiftState(self,function,state,style="Button"):
+        bits = self.functions[style][channel]["Function"]
         bits=(8-len(bits))*'0'+bits
         if state:
             bits[2]="1"
         else:
             bits[2]="0"
-        self.functions[function][1]=bits
-        self.saveState(function)
-    def normalKeyState(self,function):
-        bits = self.functions[function][1]
+        self.functions[style][channel]["Function"]=bits
+        self.saveState(channel)
+    def normalKeyState(self,channel,style="Button"):
+        bits = self.functions[style][channel]["Function"]
         bits=bits[0:4]+"1000"
-        self.functions[function][1]=bits
-    def risingEdgeKeyState(self,function):
-        bits = self.functions[function][1]
+        self.functions[style][channel]["Function"]=bits
+        self.saveState(channel)
+    def risingEdgeKeyState(self,channel,style="Button"):
+        bits = self.functions[style][channel]["Function"]
         bits=bits[0:4]+"0100"
-        self.functions[function][1]=bits
-        self.saveState(function)
-    def fallingEdgeKeyState(self,function):
-        bits = self.functions[function][1]
+        self.functions[style][channel]["Function"]=bits
+        self.saveState(channel)
+    def fallingEdgeKeyState(self,channel,style="Button"):
+        bits = self.functions[style][channel]["Function"]
         bits = bits[0:4]+"0010"
-        self.functions[function][1] = bits
-        self.saveState(function)
-    def setKey(self,function,key):
-        if function in self.functions.keys():
+        self.functions[style][channel]["Function"]=bits
+        self.saveState(channel)
+    def setKey(self,style,key,channel=0):
+        if style in self.functions.keys():
             if key in self.keyToInt.keys():
-                match function:
-                    case "Frame forward key":
+                match style:
+                    case "Forward":
                         self.serial.write(("f "+str(self.keyToInt[key])).encode())
-                    case "Frame backward key":
+                    case "Backward":
                         self.serial.write(("r "+str(self.keyToInt[key])).encode())
-                    case "play key":
+                    case "Play":
                         self.serial.write(("F "+str(self.keyToInt[key])).encode())
-                    case "reverse key":
+                    case "Reverse":
                         self.serial.write(("R "+str(self.keyToInt[key])).encode())
-                    case "stop key":
+                    case "Stop":
                         self.serial.write(("s "+str(self.keyToInt[key])).encode())
-                    case "simple button 0":
-                        self.serial.write(("b 0 "+str(self.keyToInt[key])).encode())
-                    case "simple button 1":
-                        self.serial.write(("b 1 "+str(self.keyToInt[key])).encode())
-                    case "simple button 2":
-                        self.serial.write(("b 2 "+str(self.keyToInt[key])).encode())
-                    case "simple button 3":
-                        self.serial.write(("b 3 "+str(self.keyToInt[key])).encode())
-                    case "simple button 4":
-                        self.serial.write(("b 4 "+str(self.keyToInt[key])).encode())
-                    case "simple button 5":
-                        self.serial.write(("b 5 "+str(self.keyToInt[key])).encode())
-                    case "simple button 6":
-                        self.serial.write(("b 6 "+str(self.keyToInt[key])).encode())
-                    case "simple button 7":
-                        self.serial.write(("b 7 "+str(self.keyToInt[key])).encode())
-                    case "simple button 8":
-                        self.serial.write(("b 8 "+str(self.keyToInt[key])).encode())
-                    case "simple button 9":
-                        self.serial.write(("b 9 "+str(self.keyToInt[key])).encode())
-                    case "simple button 10":
-                        self.serial.write(("b 10 "+str(self.keyToInt[key])).encode())
-                    case "simple button 11":
-                        self.serial.write(("b 11 "+str(self.keyToInt[key])).encode())
-                    case "simple button 12":
-                        self.serial.write(("b 12 "+str(self.keyToInt[key])).encode())
-                    case "simple button 13":
-                        self.serial.write(("b 13 "+str(self.keyToInt[key])).encode())
-                    case "simple button 14":
-                        self.serial.write(("b 14 "+str(self.keyToInt[key])).encode())
-                    case "simple button 15":
-                        self.serial.write(("b 15 "+str(self.keyToInt[key])).encode())
-                    case "simple button 16":
-                        self.serial.write(("b 16 "+str(self.keyToInt[key])).encode())   
-                    case "simple button 17":
-                        self.serial.write(("b 17 "+str(self.keyToInt[key])).encode())                     
+                    case "Button":
+                        command="b {} {}".format(channel,self.keyToInt[key])
+                        self.serial.write(command.encode())
                 self.readSettings()
+    def setKnob(self,channel,key_forward,key_backward):
+        command="k {} {} {}".format(channel,self.keyToInt[key_backward],self.keyToInt[key_forward])
     def disconnect(self):
         self.serial.close()
     def listOfKeys(self):
@@ -144,10 +135,11 @@ class jogBoard:
 
 if __name__=="__main__":
     jb=jogBoard("COM3")
-    jb.fallingEdgeKeyState("simple button 0")
+    jb.fallingEdgeKeyState(0)
     time.sleep(0.1)
-    jb.risingEdgeKeyState("simple button 1")
+    jb.risingEdgeKeyState(1)
     time.sleep(1)
     jb.readSettings()
+    print(json.dumps(jb.functions,indent=2))
     jb.disconnect()
 

@@ -89,25 +89,18 @@ void setDefaultValues(){
   }
 }
 void printSettings(){
-  Serial.print("Frame forward key: "); 
+  Serial.print("Forward: "); 
   Serial.println(frameForward);
-  Serial.print("Frame backward key: "); 
+  Serial.print("Backward: "); 
   Serial.println(frameBack);
-  Serial.print("play key: "); 
+  Serial.print("Play: "); 
   Serial.println(increasePlaySpeed); 
-  Serial.print("reverse key: "); 
+  Serial.print("Reverse: "); 
   Serial.println(increaseReverseSpeed);
-  Serial.print("stop key: "); 
+  Serial.print("Stop: "); 
   Serial.println(stopPlayback);
-  
-  for(int i=0;i<4;i++){
-    Serial.print("key "); 
-    Serial.print(i); 
-    Serial.print(": "); 
-    Serial.println(keyAssignments[i]);
-  }
   for(int i=0;i<18;i++){
-    Serial.print("simple button "); 
+    Serial.print("Button-"); 
     Serial.print(i); 
     Serial.print(": "); 
     Serial.print(SwitchAssignments[i]);
@@ -116,13 +109,11 @@ void printSettings(){
   }
   Serial.println("Key Matrix ");
   for(int i = 0; i<3;i++){
-      Serial.print("knob ");
+      Serial.print("Knob-");
       Serial.print(i);
-      Serial.print(" direction 0: ");
-      Serial.println(knobAssignmets[i][0]);
-      Serial.print("knob ");
-      Serial.print(i);
-      Serial.print(" direction 1: ");
+      Serial.print(": ");
+      Serial.print(knobAssignmets[i][0]);
+      Serial.print(" : ");
       Serial.println(knobAssignmets[i][1]);
   }
   Serial.println("END OF SETTINGS");
