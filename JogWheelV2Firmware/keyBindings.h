@@ -108,7 +108,7 @@ void printSettings(){
     Serial.println(SwitchFunctions[i],BIN);
   }
   Serial.println("Key Matrix ");
-  for(int i = 0; i<3;i++){
+  for(int i = 0; i<4;i++){
       Serial.print("Knob-");
       Serial.print(i);
       Serial.print(": ");

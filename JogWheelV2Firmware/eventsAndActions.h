@@ -10,7 +10,7 @@ void eventLoop(){
     int pinNo;
     int value;
     byte bvalue;
-    commandRecieved=Serial.readStringUntil("\n");
+    commandRecieved=Serial.readStringUntil("\0");
     commandRecieved.trim();
 
     cmd=commandRecieved.substring(0,commandRecieved.indexOf(" "));

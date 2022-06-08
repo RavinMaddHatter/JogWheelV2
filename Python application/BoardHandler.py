@@ -12,6 +12,13 @@ import time
 
 class jogBoard:
     def __init__(self, port):
+        self.defaultKeyMap=[0,1,2,3,#buttons collumn 1
+                         4,5,#buttons collumn 2
+                         6,#buttons collumn 3
+                         7,8,#buttons collumn 4
+                         9,10,11,12]#buttons collumn 5
+        self.bigKnobKey=17# Bit button
+        self.knobSwMap = [13,14,15,16]#bigNode
         self.keyToInt={}
         with open("keyboard.json","r") as file:
             self.keyToInt=json.load(file)
@@ -57,6 +64,7 @@ class jogBoard:
                     number=int(vals[0].split("-")[1])
                     self.functions["Button"][number]={}
                     self.functions["Button"][number]["Key"]=self.intToKey[int(vals[1])]
+                    vals[2]="0"*(8-len(vals[2]))+vals[2]
                     self.functions["Button"][number]["Function"]=vals[2]
                 elif "Knob" in vals[0]:
                     number=int(vals[0].split("-")[1])
@@ -68,29 +76,46 @@ class jogBoard:
     def saveState(self,channel,style="Button"):
         
         self.serial.write(("B {} {}\n\r".format(channel,int(self.functions[style][channel]["Function"],2))).encode())
-    def setAltState(self,channel,state):
+    def getButtonState(self,channel,style="Button"):
+        bits = self.functions[style][channel]["Function"]
+        mod=0
+        state=0
+        if bits[0] == "1":
+            mod=1
+        elif bits[1] == "1":
+            mod=2
+        elif bits[2] == "1":
+            mod=3
+        if bits[4] == "1":
+            state=0
+        elif bits[5] == "1":
+            state=1
+        elif bits[6] == "1":
+            state=2
+        return [mod, state]
+    def setAltState(self,channel,state,style="Button"):
         bits = self.functions[style][channel]["Function"]
         if state:
-            bits[0]="1"
+            bits = bits[:0] + "1" + bits[1:]
         else:
-            bits[0]="0"
+            bits = bits[:0] + "0" + bits[1:]
         self.functions[style][channel]["Function"]=bits
         self.saveState(channel)
-    def setCtrlState(self,function,state,style="Button"):
+    def setCtrlState(self,channel,state,style="Button"):
         bits = self.functions[style][channel]["Function"]
         if state:
-            bits[1]="1"
+            bits = bits[:1] + "1" + bits[2:]
         else:
-            bits[1]="0"
+            bits = bits[:1] + "0" + bits[2:]
         self.functions[style][channel]["Function"]=bits
         self.saveState(channel)
-    def setShiftState(self,function,state,style="Button"):
+    def setShiftState(self,channel,state,style="Button"):
         bits = self.functions[style][channel]["Function"]
         bits=(8-len(bits))*'0'+bits
         if state:
-            bits[2]="1"
+            bits = bits[:2] + "1" + bits[3:]
         else:
-            bits[2]="0"
+            bits = bits[:2] + "0" + bits[3:]
         self.functions[style][channel]["Function"]=bits
         self.saveState(channel)
     def normalKeyState(self,channel,style="Button"):
@@ -123,13 +148,55 @@ class jogBoard:
                     case "Stop":
                         self.serial.write(("s "+str(self.keyToInt[key])).encode())
                     case "Button":
-                        command="b {} {}".format(channel,self.keyToInt[key])
+                        command="b {} {}\n\r".format(channel,self.keyToInt[key])
                         self.serial.write(command.encode())
-                self.readSettings()
+                    case "Knob":
+                        command="b {} {}\n\r".format(channel,self.keyToInt[key])
+                        self.serial.write(command.encode())
+                #self.readSettings()
     def setKnob(self,channel,key_forward,key_backward):
-        command="k {} {} {}".format(channel,self.keyToInt[key_backward],self.keyToInt[key_forward])
+        command="k {} {} {}\n\r".format(channel,self.keyToInt[key_backward],self.keyToInt[key_forward])
+        self.serial.write(command.encode())
     def disconnect(self):
         self.serial.close()
+    def getKeysSettings(self,key_setting):
+        mappedKey=self.defaultKeyMap[key_setting]
+        keyValue=self.functions["Button"][mappedKey]["Key"]
+        keyFunction=self.parseFunction(self.functions["Button"][mappedKey]["Function"])
+        return [keyValue,keyFunction[0],keyFunction[1]]
+    def getKnobSettings(self,knob_number):
+        mappedKey=self.defaultKeyMap[knob_number]
+        keyValue=self.functions["Button"][mappedKey]["Key"]
+        keyFunction=self.parseFunction(self.functions["Button"][mappedKey]["Function"])
+        fwd=self.functions["Knob"][knob_number]["Key1"]
+        rv=self.functions["Knob"][knob_number]["Key2"]
+        return [keyValue,keyFunction[0],keyFunction[1],fwd,rv]
+    def getBigKnobSettings(self):
+        keyValue=self.functions["Button"][self.bigKnobKey]["Key"]
+        keyFunction=self.parseFunction(self.functions["Button"][self.bigKnobKey]["Function"])
+        stpFwd=self.functions["Forward"]["key"]
+        stpBck=self.functions["Backward"]["key"]
+        play=self.functions["Play"]["key"]
+        reverse=self.functions["Reverse"]["key"]
+        stop=self.functions["Stop"]["key"]
+        return [keyValue,keyFunction[0],keyFunction[1],stpFwd,stpBck,play,reverse,stop]
+    def parseFunction(self,function):
+        modifiers=""
+        op=""
+        if function[0] =="1":
+            modifiers+="alt+"
+        if function[1] =="1":
+            modifiers+="ctrl+"
+        if function[2] =="1":
+            modifiers+="shft+"
+        if function[6]=="1":
+            op="falling"
+        if function[5]=="1":
+            op="rising"
+        if function[4]=="1":
+            op=""
+            
+        return [modifiers,op]
     def listOfKeys(self):
         return list(self.keyToInt.keys())
 
