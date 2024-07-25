@@ -89,34 +89,34 @@ void setDefaultValues(){
   }
 }
 void printSettings(){
-  Serial.print("Forward: "); 
-  Serial.println(frameForward);
-  Serial.print("Backward: "); 
-  Serial.println(frameBack);
-  Serial.print("Play: "); 
-  Serial.println(increasePlaySpeed); 
-  Serial.print("Reverse: "); 
-  Serial.println(increaseReverseSpeed);
-  Serial.print("Stop: "); 
-  Serial.println(stopPlayback);
+  USBSerial.print("Forward: "); 
+  USBSerial.println(frameForward);
+  USBSerial.print("Backward: "); 
+  USBSerial.println(frameBack);
+  USBSerial.print("Play: "); 
+  USBSerial.println(increasePlaySpeed); 
+  USBSerial.print("Reverse: "); 
+  USBSerial.println(increaseReverseSpeed);
+  USBSerial.print("Stop: "); 
+  USBSerial.println(stopPlayback);
   for(int i=0;i<18;i++){
-    Serial.print("Button-"); 
-    Serial.print(i); 
-    Serial.print(": "); 
-    Serial.print(SwitchAssignments[i]);
-    Serial.print(" : "); 
-    Serial.println(SwitchFunctions[i],BIN);
+    USBSerial.print("Button-"); 
+    USBSerial.print(i); 
+    USBSerial.print(": "); 
+    USBSerial.print(SwitchAssignments[i]);
+    USBSerial.print(" : "); 
+    USBSerial.println(SwitchFunctions[i],BIN);
   }
-  Serial.println("Key Matrix ");
+  USBSerial.println("Key Matrix ");
   for(int i = 0; i<4;i++){
-      Serial.print("Knob-");
-      Serial.print(i);
-      Serial.print(": ");
-      Serial.print(knobAssignmets[i][0]);
-      Serial.print(" : ");
-      Serial.println(knobAssignmets[i][1]);
+      USBSerial.print("Knob-");
+      USBSerial.print(i);
+      USBSerial.print(": ");
+      USBSerial.print(knobAssignmets[i][0]);
+      USBSerial.print(" : ");
+      USBSerial.println(knobAssignmets[i][1]);
   }
-  Serial.println("END OF SETTINGS");
+  USBSerial.println("END OF SETTINGS");
 }
 void initKeybindings(){
   frameForward=readIntFromEEPROM(frameForwardAddr);

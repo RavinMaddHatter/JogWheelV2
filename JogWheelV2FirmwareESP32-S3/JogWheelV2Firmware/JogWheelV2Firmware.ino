@@ -1,4 +1,7 @@
 #include <Encoder.h>
+#include "keydef.h"
+#include <elapsedMillis.h>
+
 typedef void (*taskPointer) ();
 taskPointer callTask;
 elapsedMillis taskTimer;
@@ -13,6 +16,13 @@ void setDelayedFunctionCall(long msDelay,taskPointer task ){
   eventQued = true;
   eventTime = msDelay;
 }
+
+#include "USB.h"
+#include "USBHIDKeyboard.h"
+USBHIDKeyboard Keyboard;
+USBCDC USBSerial;
+#include "usbHandler.h"
+
 #include "keyBindings.h"
 #include "actions.h"
 
@@ -31,8 +41,11 @@ elapsedMillis SocketTiming;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  while ( !Serial ) ;  
+  Keyboard.begin();
+  USB.onEvent(usbEventCallback);
+  USBSerial.onEvent(usbEventCallback);
+  USBSerial.begin();
+  USB.begin();
   initKeyMatrix();//from keyMatrixHandler.h
   initKeybindings();
   

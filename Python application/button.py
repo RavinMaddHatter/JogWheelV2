@@ -91,8 +91,8 @@ class BigKnob():
         self.line1 = self.font.render(self.key, True, "Black")
         self.line2 = self.font.render(self.reverse, True, "Black")
         self.line3 = self.font.render(self.play, True, "Black")
-        self.line4 = self.font.render(self.rev, True, "Black")
-        self.line5 = self.font.render(self.fwd, True, "Black")
+        self.line5 = self.font.render(self.rev, True, "Black")
+        self.line4 = self.font.render(self.fwd, True, "Black")
     def update(self, screen):
         screen.blit(self.surface,(self.x_pos,self.y_pos,))
         borders=self.surface.get_rect()

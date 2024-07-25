@@ -7,6 +7,13 @@ import pygame_gui
 import sys
 from button import Button, Knob, Key, BigKnob
 import pygame_menu
+import serial.tools.list_ports
+ports = serial.tools.list_ports.comports()
+serialPorts=[]
+port=""
+JB=""
+for port, desc, hwid in sorted(ports):
+    serialPorts.append([port, desc, hwid])
 
 pygame.init()
 
@@ -15,8 +22,7 @@ pygame.display.set_caption("Menu")
 
 BG = pygame.image.load("assets/Background.png")
 BG_Keys = pygame.image.load("assets/Keypad_Background.png")
-##needs to be drop down selectable:
-JB=BoardHandler.jogBoard("COM3")
+
 surface = pygame.display.set_mode((800, 600))
 
 menueStates={}
@@ -98,11 +104,63 @@ def settings():
                     KEY.checkForInput(OPTIONS_MOUSE_POS)
         
         pygame.display.update()
+        
+def confingBigKnob():
+    global menueStates
+    keyIndex=JB.bigKnobKey
+    menueStates=keyIndex
+    menu = pygame_menu.Menu('Big Knob Config', 400, 300,
+                       theme=pygame_menu.themes.THEME_DARK)
+    defaults=JB.getButtonState(keyIndex)
+    bigKnob=JB.getBigKnobSettings()
+    menu.add.text_input('Press Key:', default=bigKnob[0],onchange=setKey)
+    menu.add.text_input('Frame Forward:', default=bigKnob[3],onchange=setFrameForward)
+    menu.add.text_input('Frame Backward :', default=bigKnob[4],onchange=setFrameBackward)
+    menu.add.text_input('Play:', default=bigKnob[5],onchange=setPlay)
+    menu.add.text_input('Rewind:', default=bigKnob[6],onchange=setRewind)
+    menu.add.text_input('stop:', default=bigKnob[7],onchange=setStop)
+
+    menu.add.selector('Modifier :', [('none', keyIndex),
+                                     ('alt', keyIndex),
+                                     ('ctrl', keyIndex),
+                                     ('shift', keyIndex)],
+                      default=defaults[0],
+                      onchange=setKeyModifier)
+    menu.add.selector('detection :', [('Normal', keyIndex),
+                                     ('Rising', keyIndex),
+                                     ('Falling', keyIndex)],
+                      default=defaults[1],
+                      onchange=setKeyDetection)
+    menu.add.button('Save', reloadSettings)
+    menu.mainloop(surface)
+def setFrameForward(value):
+    print(value)
+    value=value.upper()
+    if value in JB.keyToInt.keys():
+        JB.setKey("Forward",value)
+def setFrameBackward(value):
+    value=value.upper()
+    
+    if value in JB.keyToInt.keys():
+        JB.setKey("Backward",value)
+def setPlay(value):
+    value=value.upper()
+    if value in JB.keyToInt.keys():
+        JB.setKey("Play",value)
+def setRewind(value):
+    value=value.upper()
+    if value in JB.keyToInt.keys():
+        JB.setKey("Reverse",value)
+def setStop(value):
+    value=value.upper()
+    if value in JB.keyToInt.keys():
+        JB.setKey("Stop",value)
+    
 def configKey(keyIndex):
     global menueStates
     keyIndex=JB.defaultKeyMap[keyIndex]
     menueStates=keyIndex
-    menu = pygame_menu.Menu('Welcome', 400, 300,
+    menu = pygame_menu.Menu('Key Config', 400, 300,
                        theme=pygame_menu.themes.THEME_DARK)
     defaults=JB.getButtonState(keyIndex)
     menu.add.text_input('Key :', default=JB.getKeysSettings(keyIndex)[0],onchange=setKey)
@@ -124,11 +182,10 @@ def configKnob(knob_index):
     global menueStates
     knob_index=[JB.defaultKeyMap[knob_index],knob_index]
     menueStates=knob_index
-    menu = pygame_menu.Menu('Welcome', 400, 300,
+    menu = pygame_menu.Menu('Knob Config', 400, 300,
                        theme=pygame_menu.themes.THEME_DARK)
     knobSetting=JB.getKnobSettings(knob_index[1])
-    defaults=JB.getButtonState(knob_index[1])
-    
+    defaults=JB.getButtonState(knob_index[0])
     menu.add.text_input('Press Key :', default=knobSetting[0],onchange=setKnobKey)
     menu.add.text_input('CCW Key :', default=knobSetting[3],onchange=setKnobCCW)
     menu.add.text_input('CW Key :', default=knobSetting[4],onchange=setKnobCW)
@@ -148,9 +205,10 @@ def configKnob(knob_index):
     menu.mainloop(surface)
 def setKnobKey(value):
     global menueStates
+    print(menueStates)
     value=value.upper()
     if value in JB.keyToInt.keys():
-        JB.setKey("Button",value,channel=menueStates[0])
+        JB.setKey("Button",value,channel=JB.knobSwMap[menueStates[0]])
 def setKnobCCW(value):
     global menueStates
     knobSetting=JB.getKnobSettings(menueStates[1])
@@ -168,21 +226,21 @@ def setKnobModifier(value,text):
     match value[1]:
         case 0:
             
-            JB.setAltState(menueStates[1],False)
-            JB.setCtrlState(menueStates[1],False)
-            JB.setShiftState(menueStates[1],False)
+            JB.setAltState(JB.knobSwMap[menueStates[1]],False)
+            JB.setCtrlState(JB.knobSwMap[menueStates[1]],False)
+            JB.setShiftState(JB.knobSwMap[menueStates[1]],False)
         case 1:
-            JB.setAltState(menueStates[1],True)
-            JB.setCtrlState(menueStates[1],False)
-            JB.setShiftState(menueStates[1],False)
+            JB.setAltState(JB.knobSwMap[menueStates[1]],True)
+            JB.setCtrlState(JB.knobSwMap[menueStates[1]],False)
+            JB.setShiftState(JB.knobSwMap[menueStates[1]],False)
         case 2:
-            JB.setAltState(menueStates[1],False)
-            JB.setCtrlState(menueStates[1],True)
-            JB.setShiftState(menueStates[1],False)
+            JB.setAltState(JB.knobSwMap[menueStates[1]],False)
+            JB.setCtrlState(JB.knobSwMap[menueStates[1]],True)
+            JB.setShiftState(JB.knobSwMap[menueStates[1]],False)
         case 3:
-            JB.setAltState(menueStates[1],False)
-            JB.setCtrlState(menueStates[1],False)
-            JB.setShiftState(menueStates[1],True)
+            JB.setAltState(JB.knobSwMap[menueStates[1]],False)
+            JB.setCtrlState(JB.knobSwMap[menueStates[1]],False)
+            JB.setShiftState(JB.knobSwMap[menueStates[1]],True)
 
 def setKnobDetection(value,text):
     match value[1]:
@@ -199,7 +257,7 @@ def setKey(value):
     global menueStates
     value=value.upper()
     if value in JB.keyToInt.keys():
-        JB.setKey("Button",value,channel=menueStates[0])
+        JB.setKey("Button",value,channel=menueStates)
 def setKeyModifier(value,chan):
     global menueStates
     match value[1]:
@@ -228,11 +286,30 @@ def setKeyDetection(value,text):
             JB.risingEdgeKeyState(menueStates)
         case 2:
             JB.fallingEdgeKeyState(menueStates)
+def startConnection():
+    global JB
+    print(port)
+    JB=BoardHandler.jogBoard(port)
+    settings()
+def selectPort(value, number):
+    global port
+    print(value)
+    port=value[0][1]
 
-def confingBigKnob():
-    print("big Knob")
-    pass
+def init():
+    surface.blit(BG,(0,0))
+    menu = pygame_menu.Menu('Setup', 400, 300,
+                       theme=pygame_menu.themes.THEME_DARK)
+    selections=[]
+    for device in serialPorts:
+        selections.append((device[0],device[0]))
+    menu.add.selector('Serial port :', selections,
+                      onchange=selectPort)
+
+    menu.add.button('Connect', startConnection)
+    menu.mainloop(surface)
 def main_menu():
+    
     while True:
         SCREEN.blit(BG, (0, 0))
 
@@ -271,4 +348,4 @@ def quitGame():
     pygame.quit()
     sys.exit()
 
-main_menu()
+init()

@@ -69,17 +69,17 @@ int bigWheelPlayMode(float wheelSpeed){
     case 1:
       nextState=2;
       if(wheelSpeed>0){
-        Keyboard.press(MODIFIERKEY_SHIFT);
+        Keyboard.press(KEY_LEFT_SHIFT);
         Keyboard.press(increasePlaySpeed);
         Keyboard.release(increasePlaySpeed);
-        Keyboard.release(MODIFIERKEY_SHIFT);
+        Keyboard.release(KEY_LEFT_SHIFT);
         
         
       }else{
-        Keyboard.press(MODIFIERKEY_SHIFT);
+        Keyboard.press(KEY_LEFT_SHIFT);
         Keyboard.press(increaseReverseSpeed);
         Keyboard.release(increaseReverseSpeed);
-        Keyboard.release(MODIFIERKEY_SHIFT);
+        Keyboard.release(KEY_LEFT_SHIFT);
       }
       //nextState=2;
       break;

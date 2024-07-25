@@ -10,7 +10,7 @@ void eventLoop(){
     int pinNo;
     int value;
     byte bvalue;
-    commandRecieved=Serial.readStringUntil("\0");
+    commandRecieved = Serial.readStringUntil('\0');
     commandRecieved.trim();
 
     cmd=commandRecieved.substring(0,commandRecieved.indexOf(" "));
@@ -20,23 +20,22 @@ void eventLoop(){
         pinNo=commandRecieved.substring(0,commandRecieved.indexOf(" ")).toInt();
         commandRecieved.remove(0,commandRecieved.indexOf(" ")+1);
         value=commandRecieved.toInt();
-        Serial.print("Setting button ");
-        Serial.print(pinNo);
-        Serial.print(" to: ");
-        Serial.println(value);
+        USBSerial.print("Setting button ");
+        USBSerial.print(pinNo);
+        USBSerial.print(" to: ");
+        USBSerial.println(value);
         SwitchAssignments[pinNo]=value;
         writeIntIntoEEPROM(switchAssignmentAddr[pinNo],value);
-        //printSettings();
         break;
       case 'B':
         pinNo=commandRecieved.substring(0,commandRecieved.indexOf(" ")).toInt();
         commandRecieved.remove(0,commandRecieved.indexOf(" ")+1);
         value=commandRecieved.toInt();
         bvalue = value & 0xFF;
-        Serial.print("Setting button Function ");
-        Serial.print(pinNo);
-        Serial.print(" to: ");
-        Serial.println(bvalue,BIN);
+        USBSerial.print("Setting button Function ");
+        USBSerial.print(pinNo);
+        USBSerial.print(" to: ");
+        USBSerial.println(bvalue,BIN);
         SwitchFunctions[pinNo]=bvalue;
         EEPROM.write(switchFunctionAddr[pinNo],bvalue);
         //printSettings();
@@ -49,14 +48,14 @@ void eventLoop(){
         commandRecieved.remove(0,commandRecieved.indexOf(" ")+1);
         knobAssignmets[pinNo][0]=value;
         writeIntIntoEEPROM(knobAssignmetsAddr[pinNo][0],value);
-        Serial.print("Setting knob ");
-        Serial.print(pinNo);
-        Serial.print(" CCW to: ");
-        Serial.print(value);
-        Serial.print(" CW to: ");
+        USBSerial.print("Setting knob ");
+        USBSerial.print(pinNo);
+        USBSerial.print(" CCW to: ");
+        USBSerial.print(value);
+        USBSerial.print(" CW to: ");
         value=commandRecieved.toInt();
         knobAssignmets[pinNo][1]=value;
-        Serial.println(value);
+        USBSerial.println(value);
         writeIntIntoEEPROM(knobAssignmetsAddr[pinNo][1],value);
         //printSettings();
         break;
@@ -74,8 +73,8 @@ void eventLoop(){
         value=commandRecieved.toInt();
         frameBack=value;
         writeIntIntoEEPROM(frameBackAddr,value);
-        Serial.println("setting revers");
-        Serial.println(frameBackAddr);
+        USBSerial.print("setting revers\n\r");
+        USBSerial.println(frameBackAddr);
         break;
       case 'R'://play backwards
         value=commandRecieved.toInt();
@@ -94,25 +93,23 @@ void eventLoop(){
         normalMode=!normalMode;
         break;
       case 'd':
-        Serial.println("reseting keys to default values");
+        USBSerial.println("reseting keys to default values");
         setDefaultValues();
         initKeybindings();
         printSettings();
         break;
       default:
-        Serial.println("This is the help file, if you dont know what you are doing you must type things exactly, everyting before the colon is the command");
-        Serial.println("d: Set the default setting for the hotkeys");
-        Serial.println("b XX YY: Sets a button to a new key, XX can be any number between 0 and 17, YY you need to look up the value for the key in https://www.pjrc.com/teensy/usb_keyboard.html you will have to look in the source files");
-        Serial.println("B XX YY: Sets the function for a Key, XX can be any number between 0 and 17, YY is a bit feild. A binary number is made where 1 is each mode you want enabled and 0 is for that mode to be disabled [Alt, Ctrl, Shift, UnAssigned, Normal key, Rising Edge button push,Falling Edge Button Push,UnAssigned]");        
-        Serial.println("k XX YY ZZ: XX defines the Knob, YY defines the Counter Clock Wise button, ZZ defines the Clock Wise Button");
-        Serial.println("f XX: set frame forward key to XX");
-        Serial.println("F XX: set Play forward key to XX");
-        Serial.println("r XX: set frame back key to XX");
-        Serial.println("R XX: set play back key to XX");
-        Serial.println("s XX: set stop key to XX");
-        Serial.println("p : print the whole ");
-      
-        
+        USBSerial.println("This is the help file, if you dont know what you are doing you must type things exactly, everyting before the colon is the command");
+        USBSerial.println("d: Set the default setting for the hotkeys");
+        USBSerial.println("b XX YY: Sets a button to a new key, XX can be any number between 0 and 17, YY you need to look up the value for the key in https://www.pjrc.com/teensy/usb_keyboard.html you will have to look in the source files");
+        USBSerial.println("B XX YY: Sets the function for a Key, XX can be any number between 0 and 17, YY is a bit feild. A binary number is made where 1 is each mode you want enabled and 0 is for that mode to be disabled [Alt, Ctrl, Shift, UnAssigned, Normal key, Rising Edge button push,Falling Edge Button Push,UnAssigned]");        
+        USBSerial.println("k XX YY ZZ: XX defines the Knob, YY defines the Counter Clock Wise button, ZZ defines the Clock Wise Button");
+        USBSerial.println("f XX: set frame forward key to XX");
+        USBSerial.println("F XX: set Play forward key to XX");
+        USBSerial.println("r XX: set frame back key to XX");
+        USBSerial.println("R XX: set play back key to XX");
+        USBSerial.println("s XX: set stop key to XX");
+        USBSerial.println("p : print the whole");        
     }
   }
   

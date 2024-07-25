@@ -44,6 +44,7 @@ class jogBoard:
         keepReading=True
         
         while (time.time()-startTime)<5 and keepReading:
+            
             line=self.serial.readline().decode()
             line=line.replace("\r\n","")
             vals=line.split(": ")
@@ -165,7 +166,7 @@ class jogBoard:
         keyFunction=self.parseFunction(self.functions["Button"][mappedKey]["Function"])
         return [keyValue,keyFunction[0],keyFunction[1]]
     def getKnobSettings(self,knob_number):
-        mappedKey=self.defaultKeyMap[knob_number]
+        mappedKey=self.knobSwMap[knob_number]
         keyValue=self.functions["Button"][mappedKey]["Key"]
         keyFunction=self.parseFunction(self.functions["Button"][mappedKey]["Function"])
         fwd=self.functions["Knob"][knob_number]["Key1"]
@@ -201,11 +202,7 @@ class jogBoard:
         return list(self.keyToInt.keys())
 
 if __name__=="__main__":
-    jb=jogBoard("COM3")
-    jb.fallingEdgeKeyState(0)
-    time.sleep(0.1)
-    jb.risingEdgeKeyState(1)
-    time.sleep(1)
+    jb=jogBoard("COM5")
     jb.readSettings()
     print(json.dumps(jb.functions,indent=2))
     jb.disconnect()

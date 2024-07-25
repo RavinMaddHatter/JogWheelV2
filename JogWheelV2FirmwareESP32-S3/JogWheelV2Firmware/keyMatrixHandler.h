@@ -19,24 +19,24 @@ void initKeyMatrix(){
 
   for (int row = 0; row < 3; row++){
     for (int col = 0; col < 3; col++){
-      Serial.print("mat: 0 ");
-      Serial.print("row: ");
-      Serial.print(row);
-      Serial.print("col: ");
-      Serial.print(col);
-      Serial.print("index: ");
-      Serial.println(keyMatrix[0][row][col]);
+      USBSerial.print("mat: 0 ");
+      USBSerial.print("row: ");
+      USBSerial.print(row);
+      USBSerial.print("col: ");
+      USBSerial.write(col);
+      USBSerial.print("index: ");
+      USBSerial.println(keyMatrix[0][row][col]);
     }
   }
   for (int row = 0; row < 3; row++){
     for (int col = 0; col < 3; col++){
-      Serial.print("mat: 1");
-      Serial.print(" row: ");
-      Serial.print(row);
-      Serial.print(" col: ");
-      Serial.print(col);
-      Serial.print(" index: ");
-      Serial.println(keyMatrix[1][row][col]);
+      USBSerial.print("mat: 1");
+      USBSerial.print(" row: ");
+      USBSerial.print(row);
+      USBSerial.print(" col: ");
+      USBSerial.print(col);
+      USBSerial.print(" index: ");
+      USBSerial.println(keyMatrix[1][row][col]);
     }
   }
 }

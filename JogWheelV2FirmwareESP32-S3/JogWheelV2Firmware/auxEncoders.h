@@ -20,8 +20,6 @@ void readAuxEncoders(){
     
     for(int i =0;i<4;i++){
       if (abs(knobPositions[i]-prevKnobPositions[i])>3){
-        
-        //knobs[i].write(0);
         if(knobPositions[i]>prevKnobPositions[i]){
           Serial.print("knob ");
           Serial.print(i);
